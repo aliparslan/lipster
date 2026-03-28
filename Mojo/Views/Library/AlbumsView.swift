@@ -133,9 +133,9 @@ struct AlbumDetailView: View {
                     .tint(.accentColor)
 
                     Button {
-                        if let first = songs.first {
+                        if let randomSong = songs.randomElement() {
                             appState.shuffleEnabled = true
-                            appState.play(song: first, queue: songs)
+                            appState.play(song: randomSong, queue: songs)
                         }
                     } label: {
                         Label("Shuffle", systemImage: "shuffle")
