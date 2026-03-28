@@ -5,6 +5,7 @@ import Foundation
 final class AudioPlayer: NSObject {
     private var player: AVQueuePlayer?
     private var timeObserver: Any?
+    private var preloadedItem: AVPlayerItem?
 
     var currentSong: Song?
     var isPlaying: Bool = false
@@ -33,14 +34,9 @@ final class AudioPlayer: NSObject {
         stop()
         currentSong = song
 
-        guard let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            print("[AudioPlayer] Could not locate Documents directory")
-            return
-        }
-        let fileURL = documentsURL.appendingPathComponent(song.filePath)
-
-        guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            print("[AudioPlayer] File not found: \(fileURL.path)")
+        guard let fileURL = song.fileURL,
+              FileManager.default.fileExists(atPath: fileURL.path) else {
+            print("[AudioPlayer] File not found: \(song.filePath)")
             return
         }
 
@@ -75,6 +71,7 @@ final class AudioPlayer: NSObject {
         player?.pause()
         player?.removeAllItems()
         player = nil
+        preloadedItem = nil
         isPlaying = false
         currentTime = 0
         duration = 0
@@ -84,6 +81,23 @@ final class AudioPlayer: NSObject {
         let cmTime = CMTime(seconds: time, preferredTimescale: 600)
         player?.seek(to: cmTime, toleranceBefore: .zero, toleranceAfter: .zero)
         currentTime = time
+    }
+
+    /// Preload the next song for gapless playback.
+    /// AVQueuePlayer will automatically transition when the current item finishes.
+    func preload(song: Song) {
+        guard let fileURL = song.fileURL,
+              FileManager.default.fileExists(atPath: fileURL.path) else {
+            return
+        }
+
+        let item = AVPlayerItem(url: fileURL)
+        preloadedItem = item
+
+        // Only insert if the player exists and doesn't already have it queued
+        if let player, player.canInsert(item, after: player.currentItem) {
+            player.insert(item, after: player.currentItem)
+        }
     }
 
     private func addTimeObserver() {

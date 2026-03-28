@@ -25,6 +25,8 @@
 		A10000000000000000000010 /* MiniPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000010 /* MiniPlayerView.swift */; };
 		A10000000000000000000011 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* SearchView.swift */; };
 		A10000000000000000000012 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000012 /* Assets.xcassets */; };
+		A10000000000000000000013 /* QueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000014 /* QueueView.swift */; };
+		A10000000000000000000014 /* ColorExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000015 /* ColorExtractor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +49,8 @@
 		B10000000000000000000011 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		B10000000000000000000012 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B10000000000000000000013 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B10000000000000000000014 /* QueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueView.swift; sourceTree = "<group>"; };
+		B10000000000000000000015 /* ColorExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtractor.swift; sourceTree = "<group>"; };
 		C10000000000000000000001 /* Mojo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mojo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -122,11 +126,20 @@
 		E10000000000000000000007 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				E1000000000000000000000B /* Components */,
 				E10000000000000000000008 /* Library */,
 				E10000000000000000000009 /* NowPlaying */,
 				E1000000000000000000000A /* Search */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		E1000000000000000000000B /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000015 /* ColorExtractor.swift */,
+			);
+			path = Components;
 			sourceTree = "<group>";
 		};
 		E10000000000000000000008 /* Library */ = {
@@ -146,6 +159,7 @@
 			children = (
 				B1000000000000000000000F /* NowPlayingView.swift */,
 				B10000000000000000000010 /* MiniPlayerView.swift */,
+				B10000000000000000000014 /* QueueView.swift */,
 			);
 			path = NowPlaying;
 			sourceTree = "<group>";
@@ -261,6 +275,8 @@
 				A1000000000000000000000F /* NowPlayingView.swift in Sources */,
 				A10000000000000000000010 /* MiniPlayerView.swift in Sources */,
 				A10000000000000000000011 /* SearchView.swift in Sources */,
+				A10000000000000000000013 /* QueueView.swift in Sources */,
+				A10000000000000000000014 /* ColorExtractor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

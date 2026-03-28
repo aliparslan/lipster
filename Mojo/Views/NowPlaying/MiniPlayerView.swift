@@ -63,6 +63,7 @@ struct MiniPlayerView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
         .padding(.horizontal, 8)
+        .padding(.bottom, 4)
         .contentShape(Rectangle())
         .onTapGesture {
             showNowPlaying = true

@@ -28,13 +28,28 @@ struct PlaylistsView: View {
                                 Text(playlist.name)
                                     .font(.body)
                                     .lineLimit(1)
-                                if let description = playlist.description {
+                                if let description = playlist.description, !description.isEmpty {
                                     Text(description)
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                         .lineLimit(1)
                                 }
                             }
+                        }
+                    }
+                    .contextMenu {
+                        Button {
+                            let songs = appState.databaseManager.loadSongsForPlaylist(playlistId: playlist.id)
+                            appState.addToQueue(songs, position: .next)
+                        } label: {
+                            Label("Play Next", systemImage: "text.insert")
+                        }
+
+                        Button {
+                            let songs = appState.databaseManager.loadSongsForPlaylist(playlistId: playlist.id)
+                            appState.addToQueue(songs, position: .last)
+                        } label: {
+                            Label("Play Later", systemImage: "text.append")
                         }
                     }
                 }
@@ -56,15 +71,70 @@ struct PlaylistDetailView: View {
     @State private var songs: [Song] = []
 
     var body: some View {
-        List(songs) { song in
-            SongRow(song: song)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    appState.play(song: song, queue: songs)
+        List {
+            // Playlist header with play/shuffle
+            VStack(spacing: 12) {
+                Image(systemName: "music.note.list")
+                    .font(.system(size: 40))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 120, height: 120)
+                    .background(Color(.systemGray5))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                Text(playlist.name)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+
+                Text("\(songs.count) songs")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                HStack(spacing: 16) {
+                    Button {
+                        if let first = songs.first {
+                            appState.play(song: first, queue: songs)
+                        }
+                    } label: {
+                        Label("Play", systemImage: "play.fill")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.accentColor)
+
+                    Button {
+                        if let first = songs.first {
+                            appState.shuffleEnabled = true
+                            appState.play(song: first, queue: songs)
+                        }
+                    } label: {
+                        Label("Shuffle", systemImage: "shuffle")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
                 }
+                .padding(.top, 4)
+            }
+            .frame(maxWidth: .infinity)
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+            .padding(.vertical, 8)
+
+            // Songs
+            ForEach(songs) { song in
+                SongRow(song: song)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        appState.play(song: song, queue: songs)
+                    }
+                    .contextMenu {
+                        SongContextMenu(song: song)
+                    }
+            }
         }
         .listStyle(.plain)
         .navigationTitle(playlist.name)
+        .navigationBarTitleDisplayMode(.inline)
         .task {
             songs = appState.databaseManager.loadSongsForPlaylist(playlistId: playlist.id)
         }

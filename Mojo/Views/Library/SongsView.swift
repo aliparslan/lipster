@@ -19,6 +19,9 @@ struct SongsView: View {
                         .onTapGesture {
                             appState.play(song: song, queue: songs)
                         }
+                        .contextMenu {
+                            SongContextMenu(song: song)
+                        }
                 }
                 .listStyle(.plain)
             }
@@ -65,5 +68,41 @@ struct SongRow: View {
                 .monospacedDigit()
         }
         .padding(.vertical, 2)
+    }
+}
+
+/// Reusable context menu for songs across all views
+struct SongContextMenu: View {
+    @Environment(AppState.self) private var appState
+    let song: Song
+
+    var body: some View {
+        Button {
+            appState.addToQueue(song, position: .next)
+        } label: {
+            Label("Play Next", systemImage: "text.insert")
+        }
+
+        Button {
+            appState.addToQueue(song, position: .last)
+        } label: {
+            Label("Play Later", systemImage: "text.append")
+        }
+
+        Divider()
+
+        if let album = song.album {
+            Button {
+                // TODO: navigate to album
+            } label: {
+                Label("Go to Album", systemImage: "square.stack")
+            }
+        }
+
+        Button {
+            // TODO: navigate to artist
+        } label: {
+            Label("Go to Artist", systemImage: "person")
+        }
     }
 }

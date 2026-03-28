@@ -17,6 +17,21 @@ struct AlbumsView: View {
                     NavigationLink(value: album) {
                         AlbumRow(album: album)
                     }
+                    .contextMenu {
+                        Button {
+                            let songs = appState.databaseManager.loadSongsForAlbum(albumId: album.id)
+                            appState.addToQueue(songs, position: .next)
+                        } label: {
+                            Label("Play Next", systemImage: "text.insert")
+                        }
+
+                        Button {
+                            let songs = appState.databaseManager.loadSongsForAlbum(albumId: album.id)
+                            appState.addToQueue(songs, position: .last)
+                        } label: {
+                            Label("Play Later", systemImage: "text.append")
+                        }
+                    }
                 }
                 .listStyle(.plain)
                 .navigationDestination(for: Album.self) { album in
@@ -77,36 +92,100 @@ struct AlbumDetailView: View {
     @State private var songs: [Song] = []
 
     var body: some View {
-        List(songs) { song in
-            HStack {
-                if let trackNumber = song.trackNumber {
-                    Text("\(trackNumber)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .frame(width: 24)
+        List {
+            // Album header
+            VStack(spacing: 12) {
+                if let uiImage = album.coverArtImage {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 200, height: 200)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .shadow(radius: 8)
                 }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(song.title)
-                        .font(.body)
-                        .lineLimit(1)
-                    Text(song.artist)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
-                Spacer()
-                Text(song.durationFormatted)
-                    .font(.caption)
+
+                Text(album.name)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+
+                Text(album.artist)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    .monospacedDigit()
+
+                if let year = album.year {
+                    Text(String(year))
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+
+                // Play / Shuffle buttons
+                HStack(spacing: 16) {
+                    Button {
+                        if let first = songs.first {
+                            appState.play(song: first, queue: songs)
+                        }
+                    } label: {
+                        Label("Play", systemImage: "play.fill")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.accentColor)
+
+                    Button {
+                        if let first = songs.first {
+                            appState.shuffleEnabled = true
+                            appState.play(song: first, queue: songs)
+                        }
+                    } label: {
+                        Label("Shuffle", systemImage: "shuffle")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .padding(.top, 4)
             }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                appState.play(song: song, queue: songs)
+            .frame(maxWidth: .infinity)
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+            .padding(.vertical, 8)
+
+            // Track list
+            ForEach(songs) { song in
+                HStack {
+                    if let trackNumber = song.trackNumber {
+                        Text("\(trackNumber)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .frame(width: 24)
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(song.title)
+                            .font(.body)
+                            .lineLimit(1)
+                        Text(song.artist)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                    Spacer()
+                    Text(song.durationFormatted)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    appState.play(song: song, queue: songs)
+                }
+                .contextMenu {
+                    SongContextMenu(song: song)
+                }
             }
         }
         .listStyle(.plain)
         .navigationTitle(album.name)
+        .navigationBarTitleDisplayMode(.inline)
         .task {
             songs = appState.databaseManager.loadSongsForAlbum(albumId: album.id)
         }
