@@ -1,5 +1,6 @@
 import Foundation
 import SQLite3
+import UIKit
 
 @MainActor
 final class DatabaseManager {
@@ -175,6 +176,57 @@ final class DatabaseManager {
             name: columnText(stmt, 1) ?? "Untitled Folder",
             parentId: sqlite3_column_type(stmt, 2) == SQLITE_NULL ? nil : sqlite3_column_int64(stmt, 2)
         )
+    }
+
+    // MARK: - Artist Cover Art
+
+    /// Loads cover art for an artist by finding their most recent album's cover.
+    func loadCoverForArtist(name: String) -> UIImage? {
+        guard let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return nil
+        }
+
+        // Find the first album by this artist that has a cover
+        let sql = """
+            SELECT a.cover_path, a.name, a.artist \
+            FROM albums a \
+            WHERE a.artist = ?1 \
+            AND EXISTS (SELECT 1 FROM album_songs aso JOIN songs s ON s.id = aso.song_id WHERE aso.album_id = a.id AND s.downloaded = 1) \
+            ORDER BY a.year DESC LIMIT 1
+            """
+        let albums: [(coverPath: String?, albumName: String, artist: String)] = query(sql: sql, bind: { stmt in
+            sqlite3_bind_text(stmt, 1, (name as NSString).utf8String, -1, nil)
+        }, map: { stmt in
+            (
+                coverPath: columnText(stmt, 0),
+                albumName: columnText(stmt, 1) ?? "",
+                artist: columnText(stmt, 2) ?? ""
+            )
+        })
+
+        guard let album = albums.first else { return nil }
+
+        // Try cover_path from DB
+        if let coverPath = album.coverPath, !coverPath.isEmpty {
+            let url = docs.appendingPathComponent(coverPath)
+            if let img = UIImage(contentsOfFile: url.path) {
+                return img
+            }
+        }
+
+        // Fallback: look in music/Artist/Album/cover.jpg
+        let safe = { (s: String) -> String in
+            let illegal = "\\/:*?\"<>|"
+            var result = s
+            for ch in illegal { result = result.replacingOccurrences(of: String(ch), with: "_") }
+            return result.trimmingCharacters(in: .whitespaces)
+        }
+        let coverURL = docs
+            .appendingPathComponent("music")
+            .appendingPathComponent(safe(album.artist))
+            .appendingPathComponent(safe(album.albumName))
+            .appendingPathComponent("cover.jpg")
+        return UIImage(contentsOfFile: coverURL.path)
     }
 
     // MARK: - Helpers

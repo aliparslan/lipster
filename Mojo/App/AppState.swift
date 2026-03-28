@@ -1,3 +1,4 @@
+import ActivityKit
 import Foundation
 import Observation
 
@@ -45,12 +46,16 @@ final class AppState {
     }
     var repeatMode: RepeatMode = .off
 
+    // Volume normalization
+    var volumeNormalizationEnabled: Bool = false
+
     // Color extraction
     var albumColors: AlbumColors = .placeholder
 
     let audioPlayer = AudioPlayer()
     let databaseManager = DatabaseManager()
     let nowPlayingManager = NowPlayingManager()
+    let liveActivityManager = LiveActivityManager()
 
     init() {
         setupCallbacks()
@@ -79,6 +84,7 @@ final class AppState {
                     // End of queue — stop playback
                     self.isPlaying = false
                     self.audioPlayer.pause()
+                    self.liveActivityManager.end()
                 }
             }
         }
@@ -127,6 +133,13 @@ final class AppState {
 
         audioPlayer.play(song: song)
 
+        // Apply volume normalization if enabled
+        if volumeNormalizationEnabled {
+            audioPlayer.applyVolumeNormalization(for: song)
+        } else {
+            audioPlayer.resetVolume()
+        }
+
         // Preload next track for gapless
         preloadNextTrack()
 
@@ -135,6 +148,9 @@ final class AppState {
 
         let songDuration = Double(song.durationMs) / 1000.0
         nowPlayingManager.update(song: song, isPlaying: true, currentTime: 0, duration: songDuration)
+
+        // Update Live Activity
+        liveActivityManager.update(song: song, isPlaying: true)
     }
 
     func togglePlayPause() {
@@ -150,6 +166,7 @@ final class AppState {
         isPlaying = false
         if let song = currentSong {
             nowPlayingManager.update(song: song, isPlaying: false, currentTime: currentTime, duration: duration)
+            liveActivityManager.update(song: song, isPlaying: false)
         }
     }
 
@@ -158,6 +175,7 @@ final class AppState {
         isPlaying = true
         if let song = currentSong {
             nowPlayingManager.update(song: song, isPlaying: true, currentTime: currentTime, duration: duration)
+            liveActivityManager.update(song: song, isPlaying: true)
         }
     }
 

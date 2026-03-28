@@ -1,3 +1,4 @@
+import CoreMotion
 import SwiftUI
 
 struct NowPlayingView: View {
@@ -8,6 +9,17 @@ struct NowPlayingView: View {
     @State private var artScale: CGFloat = 1.0
     @State private var artRotation: Double = 0
     @State private var showQueue: Bool = false
+
+    // Ken Burns effect state
+    @State private var kenBurnsScale: CGFloat = 1.0
+    @State private var kenBurnsOffsetX: CGFloat = 0
+    @State private var kenBurnsOffsetY: CGFloat = 0
+    @State private var kenBurnsPhase: Int = 0
+
+    // Parallax via CoreMotion
+    @State private var motionOffsetX: CGFloat = 0
+    @State private var motionOffsetY: CGFloat = 0
+    @StateObject private var motionManager = MotionManagerBridge()
 
     private var colors: AlbumColors {
         appState.albumColors
@@ -28,7 +40,7 @@ struct NowPlayingView: View {
 
                 Spacer()
 
-                // Album art with breathing animation
+                // Album art with Ken Burns + parallax
                 albumArt
                     .padding(.horizontal, 40)
 
@@ -66,10 +78,78 @@ struct NowPlayingView: View {
             withAnimation(.easeInOut(duration: 0.4)) {
                 artScale = playing ? 1.0 : 0.85
             }
+            if playing {
+                startKenBurnsAnimation()
+            }
+        }
+        .onChange(of: appState.currentSong?.id) { _, _ in
+            // Reset and restart Ken Burns when song changes
+            resetKenBurns()
+            if appState.isPlaying {
+                startKenBurnsAnimation()
+            }
+        }
+        .onAppear {
+            motionManager.start()
+            if appState.isPlaying {
+                startKenBurnsAnimation()
+            }
+        }
+        .onDisappear {
+            motionManager.stop()
+        }
+        .onChange(of: motionManager.pitch) { _, newPitch in
+            withAnimation(.interpolatingSpring(stiffness: 50, damping: 10)) {
+                motionOffsetY = CGFloat(newPitch) * 8
+            }
+        }
+        .onChange(of: motionManager.roll) { _, newRoll in
+            withAnimation(.interpolatingSpring(stiffness: 50, damping: 10)) {
+                motionOffsetX = CGFloat(newRoll) * 8
+            }
         }
         .sheet(isPresented: $showQueue) {
             QueueView()
                 .environment(appState)
+        }
+    }
+
+    // MARK: - Ken Burns Animation
+
+    private func startKenBurnsAnimation() {
+        advanceKenBurns()
+    }
+
+    private func resetKenBurns() {
+        kenBurnsScale = 1.0
+        kenBurnsOffsetX = 0
+        kenBurnsOffsetY = 0
+        kenBurnsPhase = 0
+    }
+
+    private func advanceKenBurns() {
+        let phases: [(scale: CGFloat, x: CGFloat, y: CGFloat)] = [
+            (1.08, 6, 4),
+            (1.12, -5, 6),
+            (1.06, -4, -5),
+            (1.10, 5, -3),
+        ]
+
+        let phase = phases[kenBurnsPhase % phases.count]
+
+        withAnimation(.easeInOut(duration: 8.0)) {
+            kenBurnsScale = phase.scale
+            kenBurnsOffsetX = phase.x
+            kenBurnsOffsetY = phase.y
+        }
+
+        kenBurnsPhase += 1
+
+        // Schedule next phase
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(8))
+            guard appState.isPlaying else { return }
+            advanceKenBurns()
         }
     }
 
@@ -114,6 +194,9 @@ struct NowPlayingView: View {
                 Image(uiImage: uiImage)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
+                    .scaleEffect(kenBurnsScale)
+                    .offset(x: kenBurnsOffsetX + motionOffsetX,
+                            y: kenBurnsOffsetY + motionOffsetY)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .shadow(color: .black.opacity(0.5), radius: 30, y: 15)
             } else {
@@ -263,6 +346,31 @@ struct NowPlayingView: View {
         let minutes = totalSeconds / 60
         let seconds = totalSeconds % 60
         return String(format: "%d:%02d", minutes, seconds)
+    }
+}
+
+// MARK: - CoreMotion Bridge for Parallax
+
+/// ObservableObject bridge for CoreMotion device motion data.
+/// Provides pitch and roll values for parallax effect on album art.
+final class MotionManagerBridge: ObservableObject {
+    private let manager = CMMotionManager()
+
+    @Published var pitch: Double = 0
+    @Published var roll: Double = 0
+
+    func start() {
+        guard manager.isDeviceMotionAvailable else { return }
+        manager.deviceMotionUpdateInterval = 1.0 / 30.0
+        manager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
+            guard let self, let motion else { return }
+            self.pitch = motion.attitude.pitch
+            self.roll = motion.attitude.roll
+        }
+    }
+
+    func stop() {
+        manager.stopDeviceMotionUpdates()
     }
 }
 

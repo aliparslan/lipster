@@ -46,12 +46,16 @@ struct MojoApp: App {
 }
 
 struct SettingsView: View {
+    @Environment(AppState.self) private var appState
+
     var body: some View {
+        @Bindable var appState = appState
         NavigationStack {
             List {
                 Section("Playback") {
                     Toggle("Gapless Playback", isOn: .constant(true))
                     Toggle("Crossfade", isOn: .constant(false))
+                    Toggle("Volume Normalization", isOn: $appState.volumeNormalizationEnabled)
                 }
                 Section("Library") {
                     LabeledContent("Database", value: "ripper.db")

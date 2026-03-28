@@ -3,6 +3,8 @@ import SwiftUI
 struct AlbumsView: View {
     @Environment(AppState.self) private var appState
     @State private var albums: [Album] = []
+    @State private var isCoverFlowMode: Bool = false
+    @State private var navigateToAlbum: Album?
 
     var body: some View {
         Group {
@@ -12,35 +14,67 @@ struct AlbumsView: View {
                     systemImage: "square.stack",
                     description: Text("Albums will appear once ripper.db is loaded.")
                 )
+            } else if isCoverFlowMode {
+                coverFlowContent
             } else {
-                List(albums) { album in
-                    NavigationLink(value: album) {
-                        AlbumRow(album: album)
+                listContent
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                        isCoverFlowMode.toggle()
                     }
-                    .contextMenu {
-                        Button {
-                            let songs = appState.databaseManager.loadSongsForAlbum(albumId: album.id)
-                            appState.addToQueue(songs, position: .next)
-                        } label: {
-                            Label("Play Next", systemImage: "text.insert")
-                        }
-
-                        Button {
-                            let songs = appState.databaseManager.loadSongsForAlbum(albumId: album.id)
-                            appState.addToQueue(songs, position: .last)
-                        } label: {
-                            Label("Play Later", systemImage: "text.append")
-                        }
-                    }
-                }
-                .listStyle(.plain)
-                .navigationDestination(for: Album.self) { album in
-                    AlbumDetailView(album: album)
+                } label: {
+                    Image(systemName: isCoverFlowMode ? "list.bullet" : "square.stack.3d.up")
+                        .contentTransition(.symbolEffect(.replace))
                 }
             }
         }
         .task {
             albums = appState.databaseManager.loadAlbums()
+        }
+        .navigationDestination(for: Album.self) { album in
+            AlbumDetailView(album: album)
+        }
+    }
+
+    private var listContent: some View {
+        List(albums) { album in
+            NavigationLink(value: album) {
+                AlbumRow(album: album)
+            }
+            .contextMenu {
+                Button {
+                    let songs = appState.databaseManager.loadSongsForAlbum(albumId: album.id)
+                    appState.addToQueue(songs, position: .next)
+                } label: {
+                    Label("Play Next", systemImage: "text.insert")
+                }
+
+                Button {
+                    let songs = appState.databaseManager.loadSongsForAlbum(albumId: album.id)
+                    appState.addToQueue(songs, position: .last)
+                } label: {
+                    Label("Play Later", systemImage: "text.append")
+                }
+            }
+        }
+        .listStyle(.plain)
+    }
+
+    private var coverFlowContent: some View {
+        VStack {
+            Spacer()
+            CoverFlowView(albums: albums) { album in
+                navigateToAlbum = album
+            }
+            .frame(height: 340)
+            Spacer()
+        }
+        .navigationDestination(item: $navigateToAlbum) { album in
+            AlbumDetailView(album: album)
         }
     }
 }

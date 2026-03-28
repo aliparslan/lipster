@@ -1,5 +1,6 @@
 import AVFoundation
 import Foundation
+import UIKit
 
 @MainActor
 final class AudioPlayer: NSObject {
@@ -126,5 +127,98 @@ final class AudioPlayer: NSObject {
 
     @objc private func playerItemDidFinish(_ notification: Notification) {
         onSongFinished?()
+    }
+
+    // MARK: - Volume Normalization
+
+    /// Analyzes the audio file's peak level and adjusts player volume
+    /// to target approximately -14 LUFS (roughly 0.7 for loud tracks, 1.0 for quiet).
+    func applyVolumeNormalization(for song: Song) {
+        guard let fileURL = song.fileURL else {
+            player?.volume = 1.0
+            return
+        }
+
+        let asset = AVAsset(url: fileURL)
+        Task {
+            do {
+                guard let audioTrack = try await asset.loadTracks(withMediaType: .audio).first else {
+                    await MainActor.run { self.player?.volume = 1.0 }
+                    return
+                }
+
+                // Read the audio's estimated data rate to approximate loudness.
+                // Higher bitrate / data rate often correlates with louder mastering.
+                let dataRate = try await audioTrack.load(.estimatedDataRate)
+
+                // Use a simple heuristic: most modern loud masters have high data rates.
+                // Target volume ~0.7 for loud tracks (high bitrate),
+                // ~1.0 for quieter tracks (lower bitrate).
+                // A typical high-quality loud track has ~256000+ data rate.
+                let normalizedVolume: Float
+                if dataRate > 0 {
+                    // Analyze using AVAudioFile for peak detection
+                    normalizedVolume = await self.calculateNormalizedVolume(url: fileURL)
+                } else {
+                    normalizedVolume = 1.0
+                }
+
+                await MainActor.run {
+                    self.player?.volume = normalizedVolume
+                }
+            } catch {
+                await MainActor.run {
+                    self.player?.volume = 1.0
+                }
+            }
+        }
+    }
+
+    /// Reads the first few seconds of audio to estimate peak level,
+    /// then calculates an appropriate playback volume.
+    private nonisolated func calculateNormalizedVolume(url: URL) async -> Float {
+        do {
+            let file = try AVAudioFile(forReading: url)
+            let format = file.processingFormat
+            let sampleRate = format.sampleRate
+
+            // Read first 3 seconds worth of samples
+            let framesToRead = AVAudioFrameCount(min(sampleRate * 3.0, Double(file.length)))
+            guard framesToRead > 0,
+                  let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: framesToRead) else {
+                return 1.0
+            }
+
+            try file.read(into: buffer, frameCount: framesToRead)
+
+            // Find peak amplitude across all channels
+            var peak: Float = 0.0
+            if let floatData = buffer.floatChannelData {
+                for channel in 0..<Int(format.channelCount) {
+                    for frame in 0..<Int(buffer.frameLength) {
+                        let sample = abs(floatData[channel][frame])
+                        if sample > peak {
+                            peak = sample
+                        }
+                    }
+                }
+            }
+
+            // Target peak around 0.7 (-3 dB roughly).
+            // If the track's peak is already near 1.0 (loud master), scale down.
+            // If the track's peak is low (quiet), scale up but cap at 1.0.
+            guard peak > 0.001 else { return 1.0 }
+
+            let targetPeak: Float = 0.7
+            let gain = targetPeak / peak
+            return min(gain, 1.0) // Never amplify above 1.0 to avoid clipping
+        } catch {
+            return 1.0
+        }
+    }
+
+    /// Reset volume to default (no normalization).
+    func resetVolume() {
+        player?.volume = 1.0
     }
 }

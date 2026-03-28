@@ -4,6 +4,7 @@ struct ArtistsView: View {
     @Environment(AppState.self) private var appState
     @State private var artists: [String] = []
     @State private var allSongs: [Song] = []
+    @State private var artistCovers: [String: UIImage] = [:]
 
     var body: some View {
         Group {
@@ -17,13 +18,21 @@ struct ArtistsView: View {
                 List(artists, id: \.self) { artist in
                     NavigationLink(value: artist) {
                         HStack(spacing: 12) {
-                            Circle()
-                                .fill(Color(.systemGray5))
-                                .frame(width: 44, height: 44)
-                                .overlay {
-                                    Image(systemName: "person.fill")
-                                        .foregroundStyle(.secondary)
-                                }
+                            if let cover = artistCovers[artist] {
+                                Image(uiImage: cover)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 44, height: 44)
+                                    .clipShape(Circle())
+                            } else {
+                                Circle()
+                                    .fill(Color(.systemGray5))
+                                    .frame(width: 44, height: 44)
+                                    .overlay {
+                                        Image(systemName: "person.fill")
+                                            .foregroundStyle(.secondary)
+                                    }
+                            }
                             Text(artist)
                                 .font(.body)
                         }
@@ -39,6 +48,14 @@ struct ArtistsView: View {
             allSongs = appState.databaseManager.loadSongs()
             let uniqueArtists = Set(allSongs.map { $0.artist })
             artists = uniqueArtists.sorted()
+
+            // Load artist cover art in background
+            let db = appState.databaseManager
+            for artist in artists {
+                if let cover = db.loadCoverForArtist(name: artist) {
+                    artistCovers[artist] = cover
+                }
+            }
         }
     }
 }
