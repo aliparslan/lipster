@@ -3,7 +3,7 @@ import UIKit
 
 // MARK: - SwiftUI Bridge
 
-struct CoverFlowView: UIViewRepresentable {
+struct FlipView: UIViewRepresentable {
     let albums: [Album]
     var centeredIndex: Binding<Int>?
     let onAlbumTapped: (Album) -> Void
@@ -12,14 +12,14 @@ struct CoverFlowView: UIViewRepresentable {
         Coordinator(parent: self)
     }
 
-    func makeUIView(context: Context) -> CoverFlowUIView {
-        let view = CoverFlowUIView()
+    func makeUIView(context: Context) -> FlipUIView {
+        let view = FlipUIView()
         view.delegate = context.coordinator
         view.setAlbums(albums)
         return view
     }
 
-    func updateUIView(_ uiView: CoverFlowUIView, context: Context) {
+    func updateUIView(_ uiView: FlipUIView, context: Context) {
         context.coordinator.parent = self
         if uiView.albums != albums {
             uiView.setAlbums(albums)
@@ -31,39 +31,39 @@ struct CoverFlowView: UIViewRepresentable {
         }
     }
 
-    class Coordinator: CoverFlowUIViewDelegate {
-        var parent: CoverFlowView
+    class Coordinator: FlipUIViewDelegate {
+        var parent: FlipView
 
-        init(parent: CoverFlowView) {
+        init(parent: FlipView) {
             self.parent = parent
         }
 
-        func coverFlowDidScroll(toIndex index: Int) {
+        func flipDidScroll(toIndex index: Int) {
             parent.centeredIndex?.wrappedValue = index
         }
 
-        func coverFlowDidTapCenter(atIndex index: Int) {
+        func flipDidTapCenter(atIndex index: Int) {
             guard parent.albums.indices.contains(index) else { return }
             parent.onAlbumTapped(parent.albums[index])
         }
     }
 }
 
-// MARK: - UIKit Cover Flow Engine
+// MARK: - UIKit Flip Engine
 
-protocol CoverFlowUIViewDelegate: AnyObject {
-    func coverFlowDidScroll(toIndex index: Int)
-    func coverFlowDidTapCenter(atIndex index: Int)
+protocol FlipUIViewDelegate: AnyObject {
+    func flipDidScroll(toIndex index: Int)
+    func flipDidTapCenter(atIndex index: Int)
 }
 
-class CoverFlowUIView: UIView {
-    weak var delegate: CoverFlowUIViewDelegate?
+class FlipUIView: UIView {
+    weak var delegate: FlipUIViewDelegate?
     private(set) var albums: [Album] = []
 
     private let scrollView = UIScrollView()
     private var coverViews: [CoverItemView] = []
 
-    // --- Classic Cover Flow constants (from Addy Osmani / Apple spec) ---
+    // --- Flip view constants ---
     private let coverSize: CGFloat = 160
     private let sideAngle: CGFloat = 45          // degrees — classic value
     private let sideSpacing: CGFloat = 38         // shows 2-3 per side comfortably
@@ -243,7 +243,7 @@ class CoverFlowUIView: UIView {
         scrollView.setContentOffset(CGPoint(x: targetOffsetX, y: 0), animated: animated)
         if currentIndex != index {
             currentIndex = index
-            delegate?.coverFlowDidScroll(toIndex: index)
+            delegate?.flipDidScroll(toIndex: index)
         }
     }
 
@@ -253,7 +253,7 @@ class CoverFlowUIView: UIView {
         let centerItemX = centerX(forIndex: currentIndex)
 
         if abs(loc.x - centerItemX) < coverSize / 2 && loc.y < coverSize {
-            delegate?.coverFlowDidTapCenter(atIndex: currentIndex)
+            delegate?.flipDidTapCenter(atIndex: currentIndex)
         } else {
             // Tap on a side item: find which one and scroll to it
             for i in albums.indices {
@@ -269,7 +269,7 @@ class CoverFlowUIView: UIView {
 
 // MARK: - UIScrollViewDelegate
 
-extension CoverFlowUIView: UIScrollViewDelegate {
+extension FlipUIView: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         updateTransforms()
         let viewCenter = scrollView.contentOffset.x + scrollView.bounds.width / 2
@@ -281,7 +281,7 @@ extension CoverFlowUIView: UIScrollViewDelegate {
         }
         if bestIndex != currentIndex {
             currentIndex = bestIndex
-            delegate?.coverFlowDidScroll(toIndex: bestIndex)
+            delegate?.flipDidScroll(toIndex: bestIndex)
         }
     }
 
@@ -370,6 +370,6 @@ private class CoverItemView: UIView {
 }
 
 #Preview {
-    CoverFlowView(albums: []) { _ in }
+    FlipView(albums: []) { _ in }
         .preferredColorScheme(.dark)
 }

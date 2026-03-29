@@ -31,14 +31,14 @@
 		A10000000000000000000013 /* QueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000014 /* QueueView.swift */; };
 		A10000000000000000000014 /* ColorExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000015 /* ColorExtractor.swift */; };
 		A10000000000000000000015 /* LiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000016 /* LiveActivityManager.swift */; };
-		A10000000000000000000016 /* CoverFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000017 /* CoverFlowView.swift */; };
-		C919416CAF3D77C4D901EDF2 /* CoverFlowBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279F4877B8A384205389FF7D /* CoverFlowBrowserView.swift */; };
+		A10000000000000000000016 /* FlipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000017 /* FlipView.swift */; };
+		C919416CAF3D77C4D901EDF2 /* FlipBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279F4877B8A384205389FF7D /* FlipBrowserView.swift */; };
 		FB264C988B32902BD2D59224 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 239542B983BE80233818208A /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		239542B983BE80233818208A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsView.swift; path = Lipster/Views/Settings/SettingsView.swift; sourceTree = SOURCE_ROOT; };
-		279F4877B8A384205389FF7D /* CoverFlowBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CoverFlowBrowserView.swift; path = Lipster/Views/CoverFlow/CoverFlowBrowserView.swift; sourceTree = SOURCE_ROOT; };
+		279F4877B8A384205389FF7D /* FlipBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FlipBrowserView.swift; path = Lipster/Views/Flip/FlipBrowserView.swift; sourceTree = SOURCE_ROOT; };
 		4EE44A0BB981E4E6C3B73EA6 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HapticManager.swift; path = Lipster/Utilities/HapticManager.swift; sourceTree = SOURCE_ROOT; };
 		958D4D5488250C9851F99E75 /* LikedSongsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LikedSongsView.swift; path = Lipster/Views/Library/LikedSongsView.swift; sourceTree = SOURCE_ROOT; };
 		9ED84B7382700A8D9256A6C4 /* ImageCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ImageCache.swift; path = Lipster/Utilities/ImageCache.swift; sourceTree = SOURCE_ROOT; };
@@ -64,7 +64,7 @@
 		B10000000000000000000014 /* QueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueView.swift; sourceTree = "<group>"; };
 		B10000000000000000000015 /* ColorExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtractor.swift; sourceTree = "<group>"; };
 		B10000000000000000000016 /* LiveActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityManager.swift; sourceTree = "<group>"; };
-		B10000000000000000000017 /* CoverFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverFlowView.swift; sourceTree = "<group>"; };
+		B10000000000000000000017 /* FlipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlipView.swift; sourceTree = "<group>"; };
 		C10000000000000000000001 /* Lipster.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lipster.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -88,7 +88,7 @@
 				4EE44A0BB981E4E6C3B73EA6 /* HapticManager.swift */,
 				239542B983BE80233818208A /* SettingsView.swift */,
 				958D4D5488250C9851F99E75 /* LikedSongsView.swift */,
-				279F4877B8A384205389FF7D /* CoverFlowBrowserView.swift */,
+				279F4877B8A384205389FF7D /* FlipBrowserView.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -188,7 +188,7 @@
 			isa = PBXGroup;
 			children = (
 				B10000000000000000000015 /* ColorExtractor.swift */,
-				B10000000000000000000017 /* CoverFlowView.swift */,
+				B10000000000000000000017 /* FlipView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -299,12 +299,12 @@
 				A10000000000000000000013 /* QueueView.swift in Sources */,
 				A10000000000000000000014 /* ColorExtractor.swift in Sources */,
 				A10000000000000000000015 /* LiveActivityManager.swift in Sources */,
-				A10000000000000000000016 /* CoverFlowView.swift in Sources */,
+				A10000000000000000000016 /* FlipView.swift in Sources */,
 				5BF04900BCDF230E9A525C67 /* ImageCache.swift in Sources */,
 				07344C328BCECB6C7F85E7EA /* HapticManager.swift in Sources */,
 				FB264C988B32902BD2D59224 /* SettingsView.swift in Sources */,
 				971A48849A4F4CF7DCE12189 /* LikedSongsView.swift in Sources */,
-				C919416CAF3D77C4D901EDF2 /* CoverFlowBrowserView.swift in Sources */,
+				C919416CAF3D77C4D901EDF2 /* FlipBrowserView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

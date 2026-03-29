@@ -1,4 +1,4 @@
-- [Lipster Music Player](project_mojo.md) — iOS SwiftUI + UIKit music player with local SQLite DB, Cover Flow, PS3 XMB inspiration
+- [Lipster Music Player](project_mojo.md) — iOS SwiftUI + UIKit music player with local SQLite DB, Flip, PS3 XMB inspiration
 - [User profile](user_alip.md) — iOS dev, cares about native feel and visual polish, motion sensitivity
 - [No parallax effects](feedback_parallax.md) — User finds motion effects nauseating, never add them
-- [Cover Flow must use UIKit](feedback_coverflow_uikit.md) — SwiftUI scrollTransition too limited, use CATransform3D via UIViewRepresentable
+- [Flip must use UIKit](feedback_coverflow_uikit.md) — SwiftUI scrollTransition too limited, use CATransform3D via UIViewRepresentable

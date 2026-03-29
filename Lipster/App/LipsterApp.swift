@@ -12,9 +12,9 @@ struct LipsterApp: App {
                     .safeAreaInset(edge: .bottom) { miniPlayer }
                     .tabItem { Label("Library", systemImage: "music.note.house") }
 
-                CoverFlowBrowserView()
+                FlipBrowserView()
                     .safeAreaInset(edge: .bottom) { miniPlayer }
-                    .tabItem { Label("Cover Flow", systemImage: "square.stack.3d.up") }
+                    .tabItem { Label("Flip", systemImage: "rectangle.stack") }
 
                 SearchView()
                     .safeAreaInset(edge: .bottom) { miniPlayer }

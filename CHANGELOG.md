@@ -30,14 +30,14 @@ xcrun simctl io booted screenshot /tmp/lipster_screenshot.png
 
 ### Navigate Tabs via AppleScript (Accessibility)
 ```bash
-# Click a specific tab (1=Library, 2=Cover Flow, 3=Search, 4=Settings)
+# Click a specific tab (1=Library, 2=Flip, 3=Search, 4=Settings)
 osascript -e '
 tell application "Simulator" to activate
 delay 0.5
 tell application "System Events"
     tell process "Simulator"
         set allButtons to every radio button of group 2 of group 1 of group 1 of group 1 of group 2 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of group 1 of window 1
-        click item 2 of allButtons  -- 2 = Cover Flow tab
+        click item 2 of allButtons  -- 2 = Flip tab
     end tell
 end tell
 '
@@ -87,7 +87,7 @@ xcrun simctl io booted screenshot /tmp/lipster_screenshot.png
 ## What Was Done
 
 ### Overview
-Complete overhaul of the Lipster iOS music player app: 31 bug fixes, new infrastructure (image caching, haptics), app restructuring for iOS 26, and a signature Cover Flow feature built with UIKit CATransform3D.
+Complete overhaul of the Lipster iOS music player app: 31 bug fixes, new infrastructure (image caching, haptics), app restructuring for iOS 26, and a signature Flip feature built with UIKit CATransform3D.
 
 ---
 
@@ -154,7 +154,7 @@ Complete overhaul of the Lipster iOS music player app: 31 bug fixes, new infrast
 ## Phase 2: App Structure — iOS 26 Readiness
 
 ### App Shell Restructure (`LipsterApp.swift`)
-- **4-tab layout**: Library, Cover Flow, Search, Settings
+- **4-tab layout**: Library, Flip, Search, Settings
 - **Mini player** uses `safeAreaInset(edge: .bottom)` on each tab (native iOS positioning, not a ZStack hack)
 - **Now Playing** presented as `.sheet` with native iOS drag-to-dismiss (removed manual `DragGesture` + `offset` hack)
 - **Dark mode only**: `.preferredColorScheme(.dark)` at root
@@ -163,7 +163,7 @@ Complete overhaul of the Lipster iOS music player app: 31 bug fixes, new infrast
 ### New Files
 - **`Lipster/Views/Settings/SettingsView.swift`** — Library stats (song/album/artist counts), volume normalization toggle, version info
 - **`Lipster/Views/Library/LikedSongsView.swift`** — Shows songs from `liked_songs` table ordered by `liked_at DESC`
-- **`Lipster/Views/CoverFlow/CoverFlowBrowserView.swift`** — Dedicated Cover Flow tab
+- **`Lipster/Views/Flip/FlipBrowserView.swift`** — Dedicated Flip tab
 
 ### Mini Player (`MiniPlayerView.swift`)
 - Progress bar as thin accent-colored line at the top
@@ -184,22 +184,22 @@ Complete overhaul of the Lipster iOS music player app: 31 bug fixes, new infrast
 
 ---
 
-## Phase 3: Cover Flow — UIKit CATransform3D
+## Phase 3: Flip — UIKit CATransform3D
 
 ### Why UIKit Instead of SwiftUI
-SwiftUI's `scrollTransition` API only provides 3 discrete phases (identity, entering, exiting) — not continuous position values. This makes smooth Cover Flow impossible in pure SwiftUI. The classic Cover Flow was built with `CATransform3D` which provides:
+SwiftUI's `scrollTransition` API only provides 3 discrete phases (identity, entering, exiting) — not continuous position values. This makes smooth Flip impossible in pure SwiftUI. The classic Flip was built with `CATransform3D` which provides:
 - `m34` perspective parameter for true 3D projection
 - Continuous per-pixel transform updates during scrolling
 - GPU-accelerated layer compositing
 - Precise z-ordering control
 
-### Implementation (`CoverFlowView.swift`)
+### Implementation (`FlipView.swift`)
 The file contains:
-1. **`CoverFlowView`** — `UIViewRepresentable` bridge between SwiftUI and UIKit
-2. **`CoverFlowUIView`** — Main UIKit view with `UIScrollView`
+1. **`FlipView`** — `UIViewRepresentable` bridge between SwiftUI and UIKit
+2. **`FlipUIView`** — Main UIKit view with `UIScrollView`
 3. **`CoverItemView`** — Individual album cover with reflection
 
-**Constants (from Addy Osmani's Cover Flow spec):**
+**Constants (from Addy Osmani's Flip spec):**
 - `coverSize`: 160pt
 - `sideAngle`: 45 degrees (classic Apple value)
 - `sideSpacing`: 38pt between side items
@@ -235,7 +235,7 @@ This means: at center (offset 0) → 0° rotation. As the album scrolls away, it
 - Tap center album → navigate to album detail
 - Tap side album → scroll to center it
 
-### Cover Flow Browser View (`CoverFlowBrowserView.swift`)
+### Flip Browser View (`FlipBrowserView.swift`)
 - PS3-inspired layered background: black base + blurred album art (20% opacity) + color gradient ribbons from `ColorExtractor` + radial glow
 - Background colors shift as you swipe between albums
 - Album info (name, artist, year) centered below the carousel with text wrapping
@@ -285,12 +285,12 @@ This means: at center (offset 0) → 0° rotation. As the album scrolls away, it
 - Nil Coalescing — Presenting Liquid Glass sheets: https://nilcoalescing.com/blog/PresentingLiquidGlassSheetsInSwiftUI/
 - Hacking with Swift — What's new in SwiftUI for iOS 26: https://www.hackingwithswift.com/articles/278/whats-new-in-swiftui-for-ios-26
 
-### Cover Flow Implementation
-- Addy Osmani — CSS Cover Flow (exact transform values): https://addyosmani.com/blog/coverflow/
-- Balsamiq — Cover Flow UX guidelines: https://balsamiq.com/learn/cover-flow/
-- Cult of Mac — iPod Cover Flow reference image: https://www.cultofmac.com/wp-content/uploads/2010/10/post-61758-image-221f26e399e464c71248d2528ef2eeaf.jpg
+### Flip Implementation
+- Addy Osmani — CSS Flip (exact transform values): https://addyosmani.com/blog/coverflow/
+- Balsamiq — Flip UX guidelines: https://balsamiq.com/learn/cover-flow/
+- Cult of Mac — iPod Flip reference image: https://www.cultofmac.com/wp-content/uploads/2010/10/post-61758-image-221f26e399e464c71248d2528ef2eeaf.jpg
 - iCarousel library (reference for CATransform3D approach): https://github.com/nicklockwood/iCarousel
-- Cover Flow history: https://en.wikipedia.org/wiki/Cover_Flow
+- Flip history: https://en.wikipedia.org/wiki/Cover_Flow
 - CodePath — Using Perspective Transforms (m34): https://guides.codepath.com/ios/Using-Perspective-Transforms
 
 ### PS3 XMB Design
@@ -318,7 +318,7 @@ This means: at center (offset 0) → 0° rotation. As the album scrolls away, it
 |------|---------|
 | `Lipster/Utilities/ImageCache.swift` | NSCache-backed image loading |
 | `Lipster/Utilities/HapticManager.swift` | Centralized haptic feedback |
-| `Lipster/Views/CoverFlow/CoverFlowBrowserView.swift` | Dedicated Cover Flow tab with PS3 background + track list |
+| `Lipster/Views/Flip/FlipBrowserView.swift` | Dedicated Flip tab with PS3 background + track list |
 | `Lipster/Views/Settings/SettingsView.swift` | Extracted settings with library stats |
 | `Lipster/Views/Library/LikedSongsView.swift` | Liked songs from ripper DB |
 
@@ -333,7 +333,7 @@ This means: at center (offset 0) → 0° rotation. As the album scrolls away, it
 | `Song.swift` | ImageCache integration, `coverArtPath` property |
 | `Album.swift` | ImageCache integration, `coverArtFilePath` property |
 | `LipsterApp.swift` | 4-tab structure, `safeAreaInset` mini player, sheet Now Playing |
-| `CoverFlowView.swift` | Complete rewrite: UIKit `CATransform3D` with `UIViewRepresentable` |
+| `FlipView.swift` | Complete rewrite: UIKit `CATransform3D` with `UIViewRepresentable` |
 | `LibraryView.swift` | Added "Liked" tab |
 | `AlbumsView.swift` | Grid default, album detail redesign, `playShuffled` |
 | `ArtistsView.swift` | Context menu on detail rows |
@@ -349,7 +349,7 @@ This means: at center (offset 0) → 0° rotation. As the album scrolls away, it
 
 ## Known Remaining Work
 - iOS 26 Liquid Glass progressive enhancement (`#available(iOS 26, *)` checks) — designed but not yet implemented since APIs require Xcode 26 beta
-- Cover Flow could use further tuning of spacing/angles based on user testing
+- Flip could use further tuning of spacing/angles based on user testing
 - Playlist folder nesting not yet implemented
 - Artist detail could group songs by album instead of flat list
 - Performance profiling with Instruments for large libraries
@@ -359,9 +359,9 @@ This means: at center (offset 0) → 0° rotation. As the album scrolls away, it
 ## Design Decisions
 - **iOS target**: iOS 18+ with iOS 26 Liquid Glass as progressive enhancement
 - **Color scheme**: Dark mode only
-- **Cover Flow**: Own dedicated tab (first-class feature)
+- **Flip**: Own dedicated tab (first-class feature)
 - **Liked Songs**: Library XMB category
 - **Parallax/Ken Burns**: Removed at user request (causes nausea)
-- **Cover Flow engine**: UIKit `CATransform3D` via `UIViewRepresentable` (SwiftUI's `scrollTransition` too limited for continuous 3D transforms)
+- **Flip engine**: UIKit `CATransform3D` via `UIViewRepresentable` (SwiftUI's `scrollTransition` too limited for continuous 3D transforms)
 - **Now Playing presentation**: Native `.sheet` (not `.fullScreenCover` with manual drag gesture)
 - **Mini player positioning**: `safeAreaInset(edge: .bottom)` per tab (native iOS, not ZStack overlay)

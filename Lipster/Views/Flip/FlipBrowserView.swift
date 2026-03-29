@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct CoverFlowBrowserView: View {
+struct FlipBrowserView: View {
     @Environment(AppState.self) private var appState
     @State private var albums: [Album] = []
     @State private var selectedAlbum: Album?
@@ -25,8 +25,8 @@ struct CoverFlowBrowserView: View {
                     VStack(spacing: 0) {
                         Spacer().frame(height: 16)
 
-                        // Cover Flow carousel with reflections
-                        CoverFlowView(
+                        // Flip carousel
+                        FlipView(
                             albums: albums,
                             centeredIndex: $centeredAlbumIndex
                         ) { album in
