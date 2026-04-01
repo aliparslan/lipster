@@ -33,6 +33,7 @@
 		A10000000000000000000015 /* LiveActivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000016 /* LiveActivityManager.swift */; };
 		A10000000000000000000016 /* FlipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000017 /* FlipView.swift */; };
 		A10000000000000000000018 /* AmbientBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000018 /* AmbientBackgroundView.swift */; };
+		A10000000000000000000019 /* BottomBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000019 /* BottomBarView.swift */; };
 		C919416CAF3D77C4D901EDF2 /* FlipBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279F4877B8A384205389FF7D /* FlipBrowserView.swift */; };
 		FB264C988B32902BD2D59224 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 239542B983BE80233818208A /* SettingsView.swift */; };
 /* End PBXBuildFile section */
@@ -67,6 +68,7 @@
 		B10000000000000000000016 /* LiveActivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityManager.swift; sourceTree = "<group>"; };
 		B10000000000000000000017 /* FlipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlipView.swift; sourceTree = "<group>"; };
 		B10000000000000000000018 /* AmbientBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbientBackgroundView.swift; sourceTree = "<group>"; };
+		B10000000000000000000019 /* BottomBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomBarView.swift; sourceTree = "<group>"; };
 		C10000000000000000000001 /* Lipster.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lipster.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -148,6 +150,7 @@
 		E10000000000000000000007 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B10000000000000000000019 /* BottomBarView.swift */,
 				E1000000000000000000000B /* Components */,
 				E10000000000000000000008 /* Library */,
 				E10000000000000000000009 /* NowPlaying */,
@@ -304,6 +307,7 @@
 				A10000000000000000000015 /* LiveActivityManager.swift in Sources */,
 				A10000000000000000000016 /* FlipView.swift in Sources */,
 				A10000000000000000000018 /* AmbientBackgroundView.swift in Sources */,
+				A10000000000000000000019 /* BottomBarView.swift in Sources */,
 				5BF04900BCDF230E9A525C67 /* ImageCache.swift in Sources */,
 				07344C328BCECB6C7F85E7EA /* HapticManager.swift in Sources */,
 				FB264C988B32902BD2D59224 /* SettingsView.swift in Sources */,

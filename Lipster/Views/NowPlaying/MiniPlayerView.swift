@@ -3,15 +3,11 @@ import SwiftUI
 struct MiniPlayerView: View {
     @Environment(AppState.self) private var appState
     @Binding var showNowPlaying: Bool
-    @State private var dragOffset: CGFloat = 0
 
     var body: some View {
         VStack(spacing: 0) {
-            // Progress bar at top
+            // Progress bar along top edge
             GeometryReader { geo in
-                let progress = appState.duration > 0
-                    ? appState.currentTime / appState.duration
-                    : 0
                 Rectangle()
                     .fill(appState.albumColors.primary)
                     .frame(width: geo.size.width * progress, height: 2)
@@ -24,16 +20,15 @@ struct MiniPlayerView: View {
                 if let song = appState.currentSong, let uiImage = song.coverArtImage {
                     Image(uiImage: uiImage)
                         .resizable()
-                        .frame(width: 48, height: 48)
+                        .frame(width: 44, height: 44)
                         .clipShape(RoundedRectangle(cornerRadius: 6))
-                        .shadow(color: appState.albumColors.primary.opacity(0.4), radius: 6, y: 2)
                 } else {
                     RoundedRectangle(cornerRadius: 6)
-                        .fill(Color(.systemGray5))
-                        .frame(width: 48, height: 48)
+                        .fill(.white.opacity(0.08))
+                        .frame(width: 44, height: 44)
                         .overlay {
                             Image(systemName: "music.note")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.white.opacity(0.4))
                         }
                 }
 
@@ -42,10 +37,11 @@ struct MiniPlayerView: View {
                     Text(appState.currentSong?.title ?? "Not Playing")
                         .font(.subheadline)
                         .fontWeight(.medium)
+                        .foregroundStyle(.white)
                         .lineLimit(1)
                     Text(appState.currentSong?.artist ?? "")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.white.opacity(0.6))
                         .lineLimit(1)
                 }
 
@@ -57,65 +53,36 @@ struct MiniPlayerView: View {
                     appState.togglePlayPause()
                 } label: {
                     Image(systemName: appState.isPlaying ? "pause.fill" : "play.fill")
-                        .font(.title2)
+                        .font(.title3)
+                        .foregroundStyle(.white)
                         .contentTransition(.symbolEffect(.replace))
-                        .frame(width: 44, height: 44)
+                        .frame(width: 40, height: 40)
                 }
+                .buttonStyle(.plain)
 
-                // Next
+                // Skip next
                 Button {
                     Haptics.impact(.light)
                     appState.skipNext()
                 } label: {
                     Image(systemName: "forward.fill")
-                        .font(.body)
-                        .frame(width: 44, height: 44)
+                        .font(.subheadline)
+                        .foregroundStyle(.white)
+                        .frame(width: 36, height: 40)
                 }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
         }
-        .foregroundStyle(.primary)
-        .background {
-            LinearGradient(
-                colors: [appState.albumColors.primary.opacity(0.3), appState.albumColors.secondary.opacity(0.15)],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-        }
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
-        .padding(.horizontal, 8)
-        .padding(.bottom, 4)
-        .offset(x: dragOffset)
-        .gesture(
-            DragGesture(minimumDistance: 20)
-                .onChanged { value in
-                    // Only track horizontal movement
-                    if abs(value.translation.width) > abs(value.translation.height) {
-                        dragOffset = value.translation.width
-                    }
-                }
-                .onEnded { value in
-                    let threshold: CGFloat = 60
-                    if value.translation.width < -threshold {
-                        // Swipe left → skip next
-                        Haptics.impact(.medium)
-                        appState.skipNext()
-                    } else if value.translation.width > threshold {
-                        // Swipe right → skip previous
-                        Haptics.impact(.medium)
-                        appState.skipPrevious()
-                    }
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        dragOffset = 0
-                    }
-                }
-        )
         .contentShape(Rectangle())
         .onTapGesture {
             showNowPlaying = true
         }
+    }
+
+    private var progress: CGFloat {
+        guard appState.duration > 0 else { return 0 }
+        return CGFloat(appState.currentTime / appState.duration)
     }
 }
