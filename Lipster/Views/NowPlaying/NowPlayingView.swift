@@ -19,39 +19,36 @@ struct NowPlayingView: View {
             AmbientBackgroundView(colors: colors, image: appState.currentSong?.coverArtImage, overlayOpacity: 0.3)
                 .animation(.easeInOut(duration: 1.0), value: colors)
 
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    Spacer().frame(height: 24)
+            VStack(spacing: 0) {
+                Spacer().frame(height: 20)
 
-                    albumArtWithReflection
-                        .padding(.horizontal, 40)
+                albumArtWithReflection
+                    .padding(.horizontal, 40)
 
-                    Spacer().frame(height: 20)
+                Spacer().frame(height: 16)
 
-                    songInfo
+                songInfo
 
-                    Spacer().frame(height: 20)
+                Spacer().frame(height: 16)
 
-                    progressScrubber
-                        .padding(.horizontal, 28)
+                progressScrubber
+                    .padding(.horizontal, 28)
 
-                    Spacer().frame(height: 16)
+                Spacer().frame(height: 12)
 
-                    transportControls
+                transportControls
 
-                    VolumeSliderView()
-                        .frame(height: 34)
-                        .padding(.horizontal, 32)
-                        .padding(.top, 8)
+                VolumeSliderView()
+                    .frame(height: 34)
+                    .padding(.horizontal, 32)
+                    .padding(.top, 4)
 
-                    Spacer().frame(height: 12)
+                Spacer()
 
-                    bottomControls
+                bottomControls
 
-                    Spacer().frame(height: 16)
-                }
+                Spacer().frame(height: 12)
             }
-            .scrollBounceBehavior(.basedOnSize)
         }
         .presentationDragIndicator(.visible)
         .preferredColorScheme(.dark)
@@ -84,7 +81,7 @@ struct NowPlayingView: View {
                 if let song = appState.currentSong, let uiImage = song.coverArtImage {
                     Image(uiImage: uiImage)
                         .resizable()
-                        .aspectRatio(contentMode: .fill)
+                        .aspectRatio(contentMode: .fit)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .shadow(color: colors.primary.opacity(0.4), radius: 30, y: 15)
                 } else {
@@ -109,7 +106,7 @@ struct NowPlayingView: View {
             if let song = appState.currentSong, let uiImage = song.coverArtImage {
                 Image(uiImage: uiImage)
                     .resizable()
-                    .aspectRatio(contentMode: .fill)
+                    .aspectRatio(contentMode: .fit)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .scaleEffect(x: 1, y: -1)
                     .frame(height: 60)

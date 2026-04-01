@@ -63,33 +63,29 @@ struct LibraryView: View {
                             .padding(.top, 12)
                             .padding(.bottom, 8)
 
+                        FlipView(
+                            items: flipItems,
+                            centeredIndex: $centeredIndex
+                        ) { index in
+                            handleItemTap(at: index)
+                        }
+                        .frame(height: 250)
+                        .clipped()
+                        .id(selectedCategory)
+
+                        centeredItemInfo
+                            .padding(.top, -8)
+                            .padding(.bottom, 8)
+
+                        Rectangle()
+                            .fill(.white.opacity(0.15))
+                            .frame(height: 0.5)
+
+                        playShuffleRow
+
                         ScrollView {
-                            VStack(spacing: 0) {
-                                FlipView(
-                                    items: flipItems,
-                                    centeredIndex: $centeredIndex
-                                ) { index in
-                                    handleItemTap(at: index)
-                                }
-                                .frame(height: 250)
-                                .clipped()
-                                .id(selectedCategory)
-
-                                centeredItemInfo
-                                    .padding(.top, -8)
-                                    .padding(.bottom, 8)
-
-                                Rectangle()
-                                    .fill(.white.opacity(0.15))
-                                    .frame(height: 0.5)
-
-                                playShuffleRow
-
-                                contentBelowCarousel
-
-                                // Bottom padding so mini player doesn't cover last items
-                                Spacer().frame(height: 20)
-                            }
+                            contentBelowCarousel
+                                .padding(.bottom, 90)
                         }
                         .scrollIndicators(.hidden)
                     }
@@ -477,11 +473,16 @@ struct LibraryView: View {
         case .artists:
             guard artistItems.indices.contains(centeredIndex) else { artistAlbumGroups = []; return }
             let artistName = artistItems[centeredIndex].name
-            // Match albums where the album artist matches (not individual song artists)
             let artistAlbums = albums.filter { $0.artist.localizedCaseInsensitiveCompare(artistName) == .orderedSame }
-            artistAlbumGroups = artistAlbums.map { album in
-                // Only load songs that belong to this album — loadSongsForAlbum already handles this correctly
-                let songs = appState.databaseManager.loadSongsForAlbum(albumId: album.id)
+            artistAlbumGroups = artistAlbums.compactMap { album in
+                let allSongs = appState.databaseManager.loadSongsForAlbum(albumId: album.id)
+                // Filter to only songs where the song artist or albumArtist matches
+                let songs = allSongs.filter { song in
+                    song.artist.localizedCaseInsensitiveCompare(artistName) == .orderedSame
+                    || (song.albumArtist ?? "").localizedCaseInsensitiveCompare(artistName) == .orderedSame
+                }
+                // Skip albums with no matching songs
+                guard !songs.isEmpty else { return nil }
                 return (album: album, songs: songs)
             }
             if let firstAlbum = artistAlbums.first {
