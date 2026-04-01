@@ -159,14 +159,6 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
-		E1000000000000000000001C /* Discover */ = {
-			isa = PBXGroup;
-			children = (
-				B1000000000000000000001A /* DiscoverView.swift */,
-			);
-			path = Discover;
-			sourceTree = "<group>";
-		};
 		E10000000000000000000008 /* Library */ = {
 			isa = PBXGroup;
 			children = (
@@ -222,6 +214,14 @@
 				C10000000000000000000001 /* Lipster.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E1000000000000000000001C /* Discover */ = {
+			isa = PBXGroup;
+			children = (
+				B1000000000000000000001A /* DiscoverView.swift */,
+			);
+			path = Discover;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -453,7 +453,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = KV876H8952;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Lipster/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Lipster;
@@ -482,7 +482,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = KV876H8952;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Lipster/Resources/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Lipster;
