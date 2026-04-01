@@ -7,12 +7,13 @@ enum AppSection: Hashable {
 struct BottomBarView: View {
     @Binding var selectedSection: AppSection
     @Binding var showNowPlaying: Bool
+    var nowPlayingNamespace: Namespace.ID
     @Environment(AppState.self) private var appState
 
     var body: some View {
         VStack(spacing: 0) {
             if appState.currentSong != nil {
-                MiniPlayerView(showNowPlaying: $showNowPlaying)
+                MiniPlayerView(showNowPlaying: $showNowPlaying, nowPlayingNamespace: nowPlayingNamespace)
             }
 
             HStack {

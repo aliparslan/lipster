@@ -3,6 +3,7 @@ import SwiftUI
 struct MiniPlayerView: View {
     @Environment(AppState.self) private var appState
     @Binding var showNowPlaying: Bool
+    var nowPlayingNamespace: Namespace.ID
 
     var body: some View {
         VStack(spacing: 0) {
@@ -79,10 +80,23 @@ struct MiniPlayerView: View {
         .onTapGesture {
             showNowPlaying = true
         }
+        .modifier(MiniPlayerTransitionSourceModifier(namespace: nowPlayingNamespace))
     }
 
     private var progress: CGFloat {
         guard appState.duration > 0 else { return 0 }
         return CGFloat(appState.currentTime / appState.duration)
+    }
+}
+
+private struct MiniPlayerTransitionSourceModifier: ViewModifier {
+    let namespace: Namespace.ID
+
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *) {
+            content.matchedTransitionSource(id: "nowPlaying", in: namespace)
+        } else {
+            content
+        }
     }
 }

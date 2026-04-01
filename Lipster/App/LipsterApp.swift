@@ -6,6 +6,7 @@ struct LipsterApp: App {
     @State private var selectedSection: AppSection = .library
     @State private var showNowPlaying = false
     @State private var showSettings = false
+    @Namespace private var nowPlayingNamespace
 
     var body: some Scene {
         WindowGroup {
@@ -23,7 +24,8 @@ struct LipsterApp: App {
             .safeAreaInset(edge: .bottom) {
                 BottomBarView(
                     selectedSection: $selectedSection,
-                    showNowPlaying: $showNowPlaying
+                    showNowPlaying: $showNowPlaying,
+                    nowPlayingNamespace: nowPlayingNamespace
                 )
             }
             .overlay(alignment: .topTrailing) {
@@ -35,6 +37,7 @@ struct LipsterApp: App {
                 NowPlayingView()
                     .environment(appState)
                     .interactiveDismissDisabled(false)
+                    .modifier(NowPlayingZoomTransitionModifier(namespace: nowPlayingNamespace))
             }
             .sheet(isPresented: $showSettings) {
                 NavigationStack {
@@ -58,5 +61,17 @@ struct LipsterApp: App {
         }
         .padding(.trailing, 16)
         .padding(.top, 4)
+    }
+}
+
+private struct NowPlayingZoomTransitionModifier: ViewModifier {
+    let namespace: Namespace.ID
+
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *) {
+            content.navigationTransition(.zoom(sourceID: "nowPlaying", in: namespace))
+        } else {
+            content
+        }
     }
 }
