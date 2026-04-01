@@ -32,7 +32,8 @@ struct LibraryView: View {
     @State private var artistItems: [ArtistItem] = []
     @State private var playlists: [Playlist] = []
 
-    // Derived from centered item
+    // Display state — only updated after flipping settles (debounced)
+    @State private var displayIndex: Int = 0
     @State private var albumColors: AlbumColors = .placeholder
     @State private var tracks: [Song] = []
     @State private var artistAlbumGroups: [(album: Album, songs: [Song])] = []
@@ -93,7 +94,7 @@ struct LibraryView: View {
             }
             .background {
                 AmbientBackgroundView(colors: albumColors, image: centeredItemImage)
-                    .animation(.easeInOut(duration: 0.5), value: centeredIndex)
+                    .animation(.easeInOut(duration: 0.5), value: displayIndex)
                     .animation(.easeInOut(duration: 0.5), value: selectedCategory)
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -101,8 +102,9 @@ struct LibraryView: View {
             .onChange(of: centeredIndex) { _, _ in debouncedUpdate() }
             .onChange(of: selectedCategory) { _, _ in
                 centeredIndex = 0
+                displayIndex = 0
                 rebuildFlipItems()
-                debouncedUpdate()
+                updateCenteredState()
             }
             .navigationDestination(item: $selectedAlbum) { album in
                 AlbumDetailView(album: album)
@@ -174,25 +176,25 @@ struct LibraryView: View {
                 }
                 .frame(maxWidth: .infinity).multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
-                .id("album-\(centeredIndex)")
+                .id("album-\(displayIndex)")
                 .transition(.opacity)
-                .animation(.easeInOut(duration: 0.25), value: centeredIndex)
+                .animation(.easeInOut(duration: 0.25), value: displayIndex)
             }
         case .artists:
-            if artistItems.indices.contains(centeredIndex) {
+            if artistItems.indices.contains(displayIndex) {
                 VStack(spacing: 3) {
-                    Text(artistItems[centeredIndex].name)
+                    Text(artistItems[displayIndex].name)
                         .font(.headline).fontWeight(.bold).foregroundStyle(.white)
                 }
                 .frame(maxWidth: .infinity).multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
-                .id("artist-\(centeredIndex)")
+                .id("artist-\(displayIndex)")
                 .transition(.opacity)
-                .animation(.easeInOut(duration: 0.25), value: centeredIndex)
+                .animation(.easeInOut(duration: 0.25), value: displayIndex)
             }
         case .playlists:
-            if playlists.indices.contains(centeredIndex) {
-                let playlist = playlists[centeredIndex]
+            if playlists.indices.contains(displayIndex) {
+                let playlist = playlists[displayIndex]
                 VStack(spacing: 3) {
                     Text(playlist.name)
                         .font(.headline).fontWeight(.bold).foregroundStyle(.white)
@@ -204,9 +206,9 @@ struct LibraryView: View {
                 }
                 .frame(maxWidth: .infinity).multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
-                .id("playlist-\(centeredIndex)")
+                .id("playlist-\(displayIndex)")
                 .transition(.opacity)
-                .animation(.easeInOut(duration: 0.25), value: centeredIndex)
+                .animation(.easeInOut(duration: 0.25), value: displayIndex)
             }
         }
     }
@@ -371,7 +373,7 @@ struct LibraryView: View {
     // MARK: - Helpers
 
     private var centeredAlbum: Album? {
-        albums.indices.contains(centeredIndex) ? albums[centeredIndex] : nil
+        albums.indices.contains(displayIndex) ? albums[displayIndex] : nil
     }
 
     private var centeredItemImage: UIImage? {
@@ -379,12 +381,12 @@ struct LibraryView: View {
         case .albums:
             return centeredAlbum?.coverArtImage
         case .artists:
-            guard artistItems.indices.contains(centeredIndex),
-                  let path = artistItems[centeredIndex].coverArtFilePath else { return nil }
+            guard artistItems.indices.contains(displayIndex),
+                  let path = artistItems[displayIndex].coverArtFilePath else { return nil }
             return ImageCache.shared.image(forPath: path)
         case .playlists:
-            guard playlists.indices.contains(centeredIndex) else { return nil }
-            return playlists[centeredIndex].coverArtImage
+            guard playlists.indices.contains(displayIndex) else { return nil }
+            return playlists[displayIndex].coverArtImage
         }
     }
 
@@ -417,6 +419,7 @@ struct LibraryView: View {
         playlists = appState.databaseManager.loadPlaylists()
 
         rebuildFlipItems()
+        displayIndex = 0
         updateCenteredState()
     }
 
@@ -431,35 +434,14 @@ struct LibraryView: View {
         }
     }
 
-    /// Debounce track loading so DB queries don't fire on every scroll frame
+    /// Debounce ALL updates so nothing runs during flipping
     private func debouncedUpdate() {
         updateTask?.cancel()
-        // Update colors immediately (cheap) but debounce track loading (expensive)
-        updateColorsForCenteredItem()
         updateTask = Task {
-            try? await Task.sleep(for: .milliseconds(150))
+            try? await Task.sleep(for: .milliseconds(200))
             guard !Task.isCancelled else { return }
+            displayIndex = centeredIndex
             updateCenteredState()
-        }
-    }
-
-    private func updateColorsForCenteredItem() {
-        switch selectedCategory {
-        case .albums:
-            guard let album = centeredAlbum else { return }
-            updateColors(image: album.coverArtImage, cacheKey: album.spotifyId ?? "album-\(album.id)")
-        case .artists:
-            guard artistItems.indices.contains(centeredIndex) else { return }
-            let artistAlbums = albums.filter { $0.artist.localizedCaseInsensitiveCompare(artistItems[centeredIndex].name) == .orderedSame }
-            if let firstAlbum = artistAlbums.first {
-                updateColors(image: firstAlbum.coverArtImage, cacheKey: firstAlbum.spotifyId ?? "album-\(firstAlbum.id)")
-            }
-        case .playlists:
-            guard playlists.indices.contains(centeredIndex), let image = playlists[centeredIndex].coverArtImage else {
-                albumColors = .placeholder
-                return
-            }
-            updateColors(image: image, cacheKey: "playlist-\(playlists[centeredIndex].id)")
         }
     }
 
@@ -471,8 +453,8 @@ struct LibraryView: View {
             updateColors(image: album.coverArtImage, cacheKey: album.spotifyId ?? "album-\(album.id)")
 
         case .artists:
-            guard artistItems.indices.contains(centeredIndex) else { artistAlbumGroups = []; return }
-            let artistName = artistItems[centeredIndex].name
+            guard artistItems.indices.contains(displayIndex) else { artistAlbumGroups = []; return }
+            let artistName = artistItems[displayIndex].name
             let artistAlbums = albums.filter { $0.artist.localizedCaseInsensitiveCompare(artistName) == .orderedSame }
             artistAlbumGroups = artistAlbums.compactMap { album in
                 let allSongs = appState.databaseManager.loadSongsForAlbum(albumId: album.id)
@@ -490,8 +472,8 @@ struct LibraryView: View {
             }
 
         case .playlists:
-            guard playlists.indices.contains(centeredIndex) else { tracks = []; return }
-            let playlist = playlists[centeredIndex]
+            guard playlists.indices.contains(displayIndex) else { tracks = []; return }
+            let playlist = playlists[displayIndex]
             tracks = appState.databaseManager.loadSongsForPlaylist(playlistId: playlist.id)
             if let image = playlist.coverArtImage {
                 updateColors(image: image, cacheKey: "playlist-\(playlist.id)")

@@ -16,11 +16,11 @@ struct NowPlayingView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: 32)
+            Spacer().frame(height: 52)
 
             // Album art
             artSection
-                .padding(.horizontal, 36)
+                .padding(.horizontal, 40)
 
             Spacer().frame(height: 24)
 
